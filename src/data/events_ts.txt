@@ -1,0 +1,76 @@
+export interface Event {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  location: string;
+  city: string;
+  image: string;
+  category: string;
+  description: string;
+  venue: string;
+}
+
+export const eventsData: Event[] = [
+  {
+    id: 'rock-show',
+    name: 'The Rock Show',
+    date: 'April 25, 2024',
+    time: '9:00 PM',
+    location: 'Downtown District',
+    city: 'Los Angeles, CA',
+    image: 'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Rock',
+    description: 'Experience an electrifying night of rock music with live performances by top bands. Get ready to rock out with powerful guitar riffs, thunderous drums, and vocals that will shake the venue. This is the ultimate rock experience for music lovers.',
+    venue: 'The Wiltern'
+  },
+  {
+    id: 'jazz-evening',
+    name: 'Jazz Evening',
+    date: 'May 2, 2024',
+    time: '7:00 PM',
+    location: 'Jazz District',
+    city: 'New York, NY',
+    image: 'https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Jazz',
+    description: 'Immerse yourself in the smooth, sophisticated sounds of contemporary jazz. Featuring talented musicians performing both classic standards and modern compositions in an intimate setting perfect for jazz enthusiasts.',
+    venue: 'Blue Note NYC'
+  },
+  {
+    id: 'indie-night',
+    name: 'Indie Night',
+    date: 'May 10, 2024',
+    time: '8:00 PM',
+    location: 'Arts District',
+    city: 'Chicago, IL',
+    image: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Indie',
+    description: 'Discover the next big indie artists in an intimate venue setting. Experience raw talent, authentic music, and the underground scene that shapes the future of independent music culture.',
+    venue: 'Metro Chicago'
+  },
+  {
+    id: 'electronic-festival',
+    name: 'Electronic Dreams',
+    date: 'May 18, 2024',
+    time: '10:00 PM',
+    location: 'Warehouse District',
+    city: 'Miami, FL',
+    image: 'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Electronic',
+    description: 'Dance the night away to pulsing electronic beats and mesmerizing visuals. Featuring world-renowned DJs spinning the latest electronic music across multiple stages with state-of-the-art sound systems.',
+    venue: 'Ultra Music Festival Grounds'
+  },
+  {
+    id: 'acoustic-session',
+    name: 'Acoustic Sessions',
+    date: 'May 25, 2024',
+    time: '7:30 PM',
+    location: 'Garden District',
+    city: 'Nashville, TN',
+    image: 'https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Acoustic',
+    description: 'Enjoy stripped-down, intimate performances showcasing the pure artistry of acoustic music. Experience the raw emotion and storytelling that makes acoustic sessions truly special.',
+    venue: 'The Bluebird Cafe'
+  }
+];
+
