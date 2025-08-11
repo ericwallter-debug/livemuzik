@@ -1,0 +1,192 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Calendar, Clock, MapPin, Tag, Users } from 'lucide-react';
+import { eventsData } from '../data/events';
+
+const EventDetailPage: React.FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  const event = eventsData.find(e => e.id === id);
+
+  if (!event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Event Not Found</h1>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const getCategoryColor = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'rock':
+        return 'from-orange-500 to-red-500';
+      case 'jazz':
+        return 'from-blue-600 to-indigo-600';
+      case 'indie':
+        return 'from-purple-600 to-pink-600';
+      case 'electronic':
+        return 'from-cyan-500 to-blue-500';
+      default:
+        return 'from-purple-600 to-pink-600';
+    }
+  };
+
+  return (
+    <motion.div
+      className="min-h-screen py-8 px-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <motion.button
+          onClick={() => navigate('/')}
+          className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 mb-8 group"
+          whileHover={{ x: -5 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ArrowLeft size={20} className="group-hover:text-purple-600 transition-colors" />
+          <span className="font-medium">Back to Events</span>
+        </motion.button>
+
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden shadow-2xl">
+          {/* Hero Image */}
+          <motion.div
+            className="relative h-96 overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <img
+              src={event.image}
+              alt={event.name}
+              className="w-full h-full object-cover"
+            />
+            <div className={`absolute inset-0 bg-gradient-to-t ${getCategoryColor(event.category)}/60 to-transparent`} />
+            
+            {/* Event Category Badge */}
+            <motion.div
+              className="absolute top-6 right-6 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <div className="flex items-center space-x-2">
+                <Tag size={16} className="text-purple-600" />
+                <span className="font-semibold text-gray-800">{event.category}</span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <div className="p-8">
+            {/* Event Title */}
+            <motion.h1
+              className="text-4xl md:text-5xl font-bold text-gray-800 mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              {event.name}
+            </motion.h1>
+
+            {/* Event Description */}
+            <motion.p
+              className="text-lg text-gray-600 mb-8 leading-relaxed"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              {event.description}
+            </motion.p>
+
+            {/* Event Details Grid */}
+            <motion.div
+              className="grid md:grid-cols-2 gap-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 p-4 bg-purple-50/50 rounded-xl">
+                  <Calendar className="text-purple-600 flex-shrink-0" size={20} />
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block">Date</span>
+                    <span className="text-lg font-semibold text-gray-800">{event.date}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 p-4 bg-purple-50/50 rounded-xl">
+                  <Clock className="text-purple-600 flex-shrink-0" size={20} />
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block">Time</span>
+                    <span className="text-lg font-semibold text-gray-800">{event.time}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 p-4 bg-purple-50/50 rounded-xl">
+                  <MapPin className="text-purple-600 flex-shrink-0" size={20} />
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block">Venue</span>
+                    <span className="text-lg font-semibold text-gray-800">{event.venue}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 p-4 bg-purple-50/50 rounded-xl">
+                  <MapPin className="text-purple-600 flex-shrink-0" size={20} />
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block">Location</span>
+                    <span className="text-lg font-semibold text-gray-800">{event.location}, {event.city}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Action Buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 mt-8"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <motion.button
+                className="flex-1 px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center space-x-2 group"
+                whileHover={{ 
+                  scale: 1.02,
+                  boxShadow: "0 20px 40px rgba(147, 51, 234, 0.3)"
+                }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Users size={20} />
+                <span>Get Tickets</span>
+              </motion.button>
+
+              <motion.button
+                className="px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>Share Event</span>
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default EventDetailPage;
