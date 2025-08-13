@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, Tag, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Tag, Users, Edit } from 'lucide-react';
 import { eventsData } from '../data/events';
 
 const EventDetailPage: React.FC = () => {
@@ -163,6 +163,7 @@ const EventDetailPage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.8 }}
             >
               <motion.button
+                onClick={() => navigate(`/event/${event.id}/tickets`)}
                 className="flex-1 px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center space-x-2 group"
                 whileHover={{ 
                   scale: 1.02,
@@ -172,6 +173,16 @@ const EventDetailPage: React.FC = () => {
               >
                 <Users size={20} />
                 <span>Get Tickets</span>
+              </motion.button>
+
+              <motion.button
+                onClick={() => navigate(`/event/${event.id}/edit`)}
+                className="px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Edit size={20} />
+                <span>Edit Event</span>
               </motion.button>
 
               <motion.button
