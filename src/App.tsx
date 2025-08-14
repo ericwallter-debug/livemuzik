@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import EventDetailPage from './pages/EventDetailPage';
 import EventEditPage from './pages/EventEditPage';
 import TicketPurchasePage from './pages/TicketPurchasePage';
+import AddEventPage from './pages/AddEventPage';
 import Navigation from './components/Navigation';
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
             <Route path="/event/:id" element={<EventDetailPage />} />
             <Route path="/event/:id/edit" element={<EventEditPage />} />
             <Route path="/event/:id/tickets" element={<TicketPurchasePage />} />
+            <Route path="/add-event" element={<AddEventPage />} />
           </Routes>
         </AnimatePresence>
       </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, Tag, Users, Edit } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Tag, Users, Edit, Plus } from 'lucide-react';
 import { eventsData } from '../data/events';
 
 const EventDetailPage: React.FC = () => {
@@ -157,41 +157,63 @@ const EventDetailPage: React.FC = () => {
 
             {/* Action Buttons */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 mt-8"
+              className="flex flex-col gap-6 mt-8"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
             >
-              <motion.button
-                onClick={() => navigate(`/event/${event.id}/tickets`)}
-                className="flex-1 px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center space-x-2 group"
-                whileHover={{ 
-                  scale: 1.02,
-                  boxShadow: "0 20px 40px rgba(147, 51, 234, 0.3)"
-                }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Users size={20} />
-                <span>Get Tickets</span>
-              </motion.button>
+              {/* Primary Action - Get Tickets */}
+              <div>
+                <motion.button
+                  onClick={() => navigate(`/event/${event.id}/tickets`)}
+                  className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center space-x-2 group"
+                  whileHover={{ 
+                    scale: 1.02,
+                    boxShadow: "0 20px 40px rgba(147, 51, 234, 0.3)"
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Users size={20} />
+                  <span>Get Tickets</span>
+                </motion.button>
+              </div>
 
-              <motion.button
-                onClick={() => navigate(`/event/${event.id}/edit`)}
-                className="px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Edit size={20} />
-                <span>Edit Event</span>
-              </motion.button>
+              {/* Secondary Actions */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <motion.button
+                  onClick={() => navigate(`/event/${event.id}/edit`)}
+                  className="flex-1 px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Edit size={20} />
+                  <span>Edit Event</span>
+                </motion.button>
 
-              <motion.button
-                className="px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span>Share Event</span>
-              </motion.button>
+                <motion.button
+                  className="flex-1 px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-center space-x-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span>Share Event</span>
+                </motion.button>
+              </div>
+
+              {/* Add Event Button - Clearly Separated */}
+              <div className="pt-4 border-t border-gray-200">
+                <motion.button
+                  onClick={() => navigate('/add-event')}
+                  className="w-full px-8 py-4 border-4 border-red-500 bg-red-50 text-red-700 font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center space-x-2 shadow-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Plus size={20} />
+                  <span>Add New Event</span>
+                </motion.button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Create a completely new event
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>

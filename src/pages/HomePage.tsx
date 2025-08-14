@@ -117,6 +117,18 @@ const HomePage: React.FC = () => {
             animate={{ scaleX: 1 }}
             transition={{ duration: 1.5, delay: 1 }}
           />
+
+          {/* Version Display */}
+          <motion.div
+            className="mt-8 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.5 }}
+          >
+            <p className="text-black text-xs" style={{ fontSize: '10pt', fontFamily: 'Times, serif' }}>
+              Version: 1.2.0
+            </p>
+          </motion.div>
         </div>
       </footer>
     </motion.div>
