@@ -1,84 +1,119 @@
 import React from 'react';
-import { Calendar, MapPin, Tag, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, MapPin, Clock } from 'lucide-react';
+
+import { Event } from '../lib/supabase';
 
 interface EventCardProps {
-  title: string;
-  description: string;
-  location: string;
-  venue: string;
-  date: string;
-  category: string;
-  image: string;
-  attendees?: number;
-  onViewDetails: () => void;
+  event: Event;
+  index: number;
 }
 
-const EventCard: React.FC<EventCardProps> = ({
-  title,
-  description,
-  location,
-  venue,
-  date,
-  category,
-  image,
-  attendees,
-  onViewDetails
-}) => {
+const EventCard: React.FC<EventCardProps> = ({ event, index }) => {
+  const navigate = useNavigate();
+
+  const getCategoryColor = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'rock':
+        return 'from-orange-500 to-red-500';
+      case 'jazz':
+        return 'from-blue-600 to-indigo-600';
+      case 'indie':
+        return 'from-purple-600 to-pink-600';
+      case 'electronic':
+        return 'from-cyan-500 to-blue-500';
+      default:
+        return 'from-purple-600 to-pink-600';
+    }
+  };
+
   return (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden">
-      {/* Image */}
-      <div className="relative h-48 overflow-hidden">
-        <img 
-          src={image} 
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-        <div className="absolute top-4 right-4">
-          <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-            {category}
-          </span>
-        </div>
-        {attendees && (
-          <div className="absolute bottom-4 left-4 flex items-center space-x-1 text-white">
-            <Users className="w-4 h-4" />
-            <span className="text-sm font-medium">{attendees.toLocaleString()} going</span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors duration-200">
-          {title}
-        </h3>
-        <p className="text-gray-600 mb-4 line-clamp-2">
-          {description}
-        </p>
-
-        {/* Event details */}
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3 text-gray-500">
-            <MapPin className="w-4 h-4 flex-shrink-0" />
-            <span className="text-sm">
-              <span className="font-medium text-gray-700">{location}</span> • {venue}
-            </span>
-          </div>
-          <div className="flex items-center space-x-3 text-gray-500">
-            <Calendar className="w-4 h-4 flex-shrink-0" />
-            <span className="text-sm font-medium text-gray-700">{date}</span>
-          </div>
+    <motion.div
+      className="bg-white/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+      onClick={() => navigate(`/event/${event.id}`)}
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      whileHover={{ 
+        y: -8,
+        scale: 1.02,
+        boxShadow: "0 25px 50px rgba(0, 0, 0, 0.1)"
+      }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <div className="relative">
+        <div className="aspect-video bg-gradient-to-br from-purple-400 to-pink-400 relative overflow-hidden">
+          <img
+            src={event.image}
+            alt={event.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          />
+          <div className={`absolute inset-0 bg-gradient-to-t ${getCategoryColor(event.category)}/60 to-transparent opacity-80`} />
+          <motion.div
+            className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: index * 0.1 + 0.3 }}
+          >
+            {event.category}
+          </motion.div>
         </div>
 
-        {/* Action button */}
-        <button 
-          onClick={onViewDetails}
-          className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
-        >
-          View Details
-        </button>
+        <div className="p-6">
+          <motion.h3
+            className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-purple-600 transition-colors duration-300"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }}
+          >
+            {event.name}
+          </motion.h3>
+
+          <div className="space-y-2 text-gray-600">
+            <motion.div
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 + 0.5 }}
+            >
+              <Calendar size={16} className="text-purple-500" />
+              <span className="font-medium">{event.date}</span>
+            </motion.div>
+
+            <motion.div
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 + 0.6 }}
+            >
+              <Clock size={16} className="text-purple-500" />
+              <span>{event.time}</span>
+            </motion.div>
+
+            <motion.div
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 + 0.7 }}
+            >
+              <MapPin size={16} className="text-purple-500" />
+              <span>{event.city}</span>
+            </motion.div>
+          </div>
+
+          <motion.div
+            className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 0, y: 10 }}
+            whileHover={{ opacity: 1, y: 0 }}
+          >
+            <div className="h-px bg-gradient-to-r from-purple-200 to-pink-200 mb-3" />
+            <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
