@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Hero from '../components/Hero';
 import EventCard from '../components/EventCard';
-import { eventsData } from '../data/events';
+import { eventOperations, Event } from '../lib/supabase';
 
 const HomePage: React.FC = () => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        const eventsData = await eventOperations.getAll();
+        setEvents(eventsData);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load events:', err);
+        setError('Failed to load events. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -28,8 +50,27 @@ const HomePage: React.FC = () => {
             <div className="h-1 w-24 bg-gradient-to-r from-purple-600 to-pink-600 mx-auto rounded-full" />
           </motion.div>
 
+          {loading && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <p className="mt-4 text-gray-600">Loading events...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           <div className="grid gap-8 max-w-2xl mx-auto">
-            {eventsData.map((event, index) => (
+            {!loading && !error && events.map((event, index) => (
               <EventCard key={event.id} event={event} index={index} />
             ))}
           </div>

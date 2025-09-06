@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, User, Mail, Phone, MapPin, Ticket, Check, Star, Coffee, Car, Wifi } from 'lucide-react';
-import { eventsData } from '../data/events';
+import { eventOperations, Event } from '../lib/supabase';
 
 interface TicketCategory {
   id: string;
@@ -27,7 +27,9 @@ const TicketPurchasePage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const event = eventsData.find(e => e.id === id);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<PurchaseForm>({
     name: '',
@@ -37,6 +39,33 @@ const TicketPurchasePage: React.FC = () => {
     selectedCategory: 'general',
     quantity: 1
   });
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (!id) {
+        setError('No event ID provided');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const eventData = await eventOperations.getById(id);
+        if (eventData) {
+          setEvent(eventData);
+        } else {
+          setError('Event not found');
+        }
+      } catch (err) {
+        setError('Failed to load event');
+        console.error('Error fetching event:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id]);
 
   const ticketCategories: TicketCategory[] = [
     {
@@ -66,11 +95,22 @@ const TicketPurchasePage: React.FC = () => {
     }
   ];
 
-  if (!event) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Event Not Found</h1>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading event details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">{error || 'Event Not Found'}</h1>
           <button
             onClick={() => navigate('/')}
             className="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
@@ -90,7 +130,10 @@ const TicketPurchasePage: React.FC = () => {
   };
 
   const selectedTicket = ticketCategories.find(cat => cat.id === formData.selectedCategory);
-  const totalPrice = selectedTicket ? selectedTicket.price * formData.quantity : 0;
+  const basePrice = event.ticket_price || selectedTicket?.price || 0;
+  const adjustedPrice = selectedTicket?.id === 'premium' ? basePrice * 1.9 : 
+                       selectedTicket?.id === 'vip' ? basePrice * 3.3 : basePrice;
+  const totalPrice = adjustedPrice * formData.quantity;
 
   const handlePurchase = () => {
     // Demo purchase - just show success message
@@ -260,7 +303,7 @@ const TicketPurchasePage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Price per ticket:</span>
-                  <span className="font-semibold">${selectedTicket?.price}</span>
+                  <span className="font-semibold">${adjustedPrice}</span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold">

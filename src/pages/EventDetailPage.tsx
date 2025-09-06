@@ -1,14 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, Tag, Users, Edit, Plus } from 'lucide-react';
-import { eventsData } from '../data/events';
+import { eventOperations, Event } from '../lib/supabase';
 
 const EventDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const event = eventsData.find(e => e.id === id);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadEvent = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const eventData = await eventOperations.getById(id);
+        setEvent(eventData);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load event:', err);
+        setError('Failed to load event. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-4"></div>
+          <p className="text-gray-600">Loading event...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Error Loading Event</h1>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (

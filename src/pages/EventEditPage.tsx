@@ -1,20 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, X, Calendar, Clock, MapPin, Tag, FileText, Building } from 'lucide-react';
-import { eventsData } from '../data/events';
+import { ArrowLeft, Save, X, Calendar, Clock, MapPin, Tag, FileText, Building, Trash2 } from 'lucide-react';
+import { eventOperations, Event } from '../lib/supabase';
 
 const EventEditPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const originalEvent = eventsData.find(e => e.id === id);
+  const [originalEvent, setOriginalEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    date: '',
+    time: '',
+    location: '',
+    city: '',
+    venue: '',
+    category: '',
+    description: '',
+    image: '',
+    ticket_price: 0,
+    status: 'ACT'
+  });
+  const [hasChanges, setHasChanges] = useState(false);
 
-  if (!originalEvent) {
+  useEffect(() => {
+    const loadEvent = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const eventData = await eventOperations.getById(id);
+        setOriginalEvent(eventData);
+        if (eventData) {
+          setFormData({
+            name: eventData.name,
+            date: eventData.date,
+            time: eventData.time,
+            location: eventData.location,
+            city: eventData.city,
+            venue: eventData.venue,
+            category: eventData.category,
+            description: eventData.description,
+            image: eventData.image,
+            ticket_price: eventData.ticket_price || 0,
+            status: eventData.status || 'ACT'
+          });
+        }
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load event:', err);
+        setError('Failed to load event. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [id]);
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Event Not Found</h1>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-4"></div>
+          <p className="text-gray-600">Loading event...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !originalEvent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            {error ? 'Error Loading Event' : 'Event Not Found'}
+          </h1>
+          {error && <p className="text-red-600 mb-4">{error}</p>}
           <button
             onClick={() => navigate('/')}
             className="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
@@ -26,21 +93,6 @@ const EventEditPage: React.FC = () => {
     );
   }
 
-  // Initialize form state with original event data
-  const [formData, setFormData] = useState({
-    name: originalEvent.name,
-    date: originalEvent.date,
-    time: originalEvent.time,
-    location: originalEvent.location,
-    city: originalEvent.city,
-    venue: originalEvent.venue,
-    category: originalEvent.category,
-    description: originalEvent.description,
-    image: originalEvent.image
-  });
-
-  const [hasChanges, setHasChanges] = useState(false);
-
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -49,10 +101,61 @@ const EventEditPage: React.FC = () => {
     setHasChanges(true);
   };
 
-  const handleSave = () => {
-    // Demo save - just show success message
-    alert('Changes saved successfully! (Demo mode - changes are not persisted)');
-    setHasChanges(false);
+  const handleSave = async () => {
+    if (!id || !originalEvent) return;
+    
+    try {
+      setSaving(true);
+      
+      console.log('Attempting to update event:', id, 'with form data:', formData);
+      
+      await eventOperations.update(id, formData);
+      alert('Changes saved successfully!');
+      setHasChanges(false);
+      navigate(`/event/${id}`);
+    } catch (err) {
+      console.error('Failed to save changes - Full error:', err);
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        eventId: id,
+        formData
+      });
+      alert(`Failed to save changes: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id || !originalEvent) return;
+    
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${originalEvent.name}"?\n\nThis will mark the event as deleted and remove it from public view.`
+    );
+    
+    if (!confirmDelete) return;
+    
+    try {
+      setDeleting(true);
+      
+      console.log('Attempting to delete event:', id);
+      
+      const deletedEvent = await eventOperations.softDelete(id);
+      console.log('Event successfully marked as deleted:', deletedEvent);
+      alert(`Event "${originalEvent.name}" has been deleted successfully.`);
+      navigate('/');
+    } catch (err) {
+      console.error('Failed to delete event - Full error:', err);
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        eventId: id
+      });
+      alert(`Failed to delete event: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -101,12 +204,31 @@ const EventEditPage: React.FC = () => {
             )}
             <motion.button
               onClick={handleSave}
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+              disabled={saving}
+              className={`flex items-center space-x-2 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all mr-3 ${
+                saving 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:shadow-xl'
+              }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <Save size={18} />
-              <span>Save Changes</span>
+              <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+            </motion.button>
+            <motion.button
+              onClick={handleDelete}
+              disabled={deleting}
+              className={`flex items-center space-x-2 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all ${
+                deleting 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-red-600 to-red-500 text-white hover:shadow-xl'
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Trash2 size={18} />
+              <span>{deleting ? 'Deleting...' : 'Delete Event'}</span>
             </motion.button>
           </div>
         </motion.div>
@@ -326,17 +448,34 @@ const EventEditPage: React.FC = () => {
             >
               <button
                 onClick={handleCancel}
-                className="flex items-center space-x-2 px-6 py-3 border-2 border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex items-center space-x-2 px-6 py-3 border-2 border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors mr-3"
               >
                 <X size={18} />
                 <span>Cancel</span>
               </button>
               <button
                 onClick={handleSave}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                disabled={saving}
+                className={`flex items-center space-x-2 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all mr-3 ${
+                  saving 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:shadow-xl'
+                }`}
               >
                 <Save size={18} />
-                <span>Save Changes</span>
+                <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className={`flex items-center space-x-2 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all ${
+                  deleting 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-red-600 to-red-500 text-white hover:shadow-xl'
+                }`}
+              >
+                <Trash2 size={18} />
+                <span>{deleting ? 'Deleting...' : 'Delete Event'}</span>
               </button>
             </motion.div>
           </div>

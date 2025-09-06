@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, X, Calendar, Clock, MapPin, Tag, FileText, Building, DollarSign, Plus } from 'lucide-react';
+import { eventOperations } from '../lib/supabase';
 
 interface EventForm {
   name: string;
@@ -33,6 +34,7 @@ const AddEventPage: React.FC = () => {
   });
 
   const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleInputChange = (field: keyof EventForm, value: string | number) => {
     setFormData(prev => ({
@@ -42,11 +44,40 @@ const AddEventPage: React.FC = () => {
     setHasChanges(true);
   };
 
-  const handleSave = () => {
-    // Demo save - just show success message
-    alert(`Event "${formData.name}" created successfully!\n\n(Demo mode - event is not persisted)`);
-    setHasChanges(false);
-    navigate('/');
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      
+      console.log('Attempting to create event with form data:', formData);
+      
+      // Create the event in the database
+      const newEvent = await eventOperations.create({
+        name: formData.name,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        city: formData.city,
+        venue: formData.venue,
+        category: formData.category,
+        description: formData.description,
+        image: formData.image || 'https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=800',
+        ticket_price: formData.ticketPrice
+      });
+      
+      alert(`Event "${formData.name}" created successfully!`);
+      setHasChanges(false);
+      navigate(`/event/${newEvent.id}`);
+    } catch (err) {
+      console.error('Failed to create event - Full error:', err);
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        formData
+      });
+      alert(`Failed to create event: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -100,15 +131,15 @@ const AddEventPage: React.FC = () => {
               onClick={handleSave}
               disabled={!isFormValid}
               className={`flex items-center space-x-2 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all ${
-                isFormValid 
-                  ? 'bg-gradient-to-r from-green-600 to-green-500 text-white hover:shadow-xl' 
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                !isFormValid || saving
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-600 to-green-500 text-white hover:shadow-xl'
               }`}
-              whileHover={isFormValid ? { scale: 1.02 } : {}}
-              whileTap={isFormValid ? { scale: 0.98 } : {}}
+              whileHover={isFormValid && !saving ? { scale: 1.02 } : {}}
+              whileTap={isFormValid && !saving ? { scale: 0.98 } : {}}
             >
               <Save size={18} />
-              <span>Create Event</span>
+              <span>{saving ? 'Creating...' : 'Create Event'}</span>
             </motion.button>
           </div>
         </motion.div>
@@ -373,13 +404,13 @@ const AddEventPage: React.FC = () => {
                 onClick={handleSave}
                 disabled={!isFormValid}
                 className={`flex items-center space-x-2 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all ${
-                  isFormValid 
-                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white hover:shadow-xl' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  !isFormValid || saving
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-green-500 text-white hover:shadow-xl'
                 }`}
               >
                 <Save size={18} />
-                <span>Create Event</span>
+                <span>{saving ? 'Creating...' : 'Create Event'}</span>
               </button>
             </motion.div>
           </div>
